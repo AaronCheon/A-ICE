@@ -6,4 +6,4 @@
 
 ## 팀원
 #### 권오제: https://github.com/rnjsdhwp
-#### 천세빈: https://github.com/Chensebin
+#### 천세빈: https://github.com/CheonSeBin

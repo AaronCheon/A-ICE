@@ -4,9 +4,16 @@ public class test {
     private static String temp1;
     private static String humi1;
     private static String weather;
+    private static String roadstate;
 
 
     //
+    public static String getRoad(){
+        return roadstate;
+    }
+    public void setRoad(String roadstate){
+        this.roadstate=roadstate;
+    }
     public static String getTemp1() {
         return temp1;
     }

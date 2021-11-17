@@ -4,10 +4,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -66,13 +68,35 @@ public class SubActivity extends AppCompatActivity implements OnMapReadyCallback
     private Marker marker1 = new Marker();
     private String jsonString;
     ArrayList<test> memberArrayList;
-
+    private SwipeRefreshLayout  swipeRefreshLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.naver_map);
 
+        String url = "http://hostsoo.dothome.co.kr/subin.php";
+
+
+         swipeRefreshLayout=findViewById(R.id.swiperefreshlayout);
+
+
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                Intent intent=getIntent();
+                finish();
+                startActivity(intent);
+                swipeRefreshLayout.setRefreshing(false);
+            }
+        });
+
+
+
+
+        // AsyncTask를 통해 HttpURLConnection 수행.
+        NetworkTask networkTask = new NetworkTask(url, null);
+        networkTask.execute();
 
         up = (Button) findViewById(R.id.up);
         down = (Button) findViewById(R.id.down);
@@ -80,16 +104,24 @@ public class SubActivity extends AppCompatActivity implements OnMapReadyCallback
         Button mark1 = (Button) findViewById(R.id.mark1);
         Button mark2 = (Button) findViewById(R.id.mark2);
 
+
         mark2.setOnClickListener(new View.OnClickListener() {
+                                     @Override
+                                     public void onClick(View view) {
+                                         createNotification1();
+                                     }
+                                 });
+
+      /*  mark2.setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
             @Override
             public void onClick(View view) {
 
-                createNotification();
+                createNotification1();
             }
-        });
+        });*/
 
-        // TextView stream=(TextView)findViewById(R.id.stream);
+                // TextView stream=(TextView)findViewById(R.id.stream);
 
    /*     Linkify.TransformFilter oje=new Linkify.TransformFilter() {
             @Override
@@ -102,8 +134,8 @@ public class SubActivity extends AppCompatActivity implements OnMapReadyCallback
         Linkify.addLinks(stream,pattern,"http://192.168.137.169:8000/index.html",null,oje);
 */
 
-        NaverMapSdk.getInstance(this).setClient(
-                new NaverMapSdk.NaverCloudPlatformClient("rdhfnllit2"));
+                NaverMapSdk.getInstance(this).setClient(
+                        new NaverMapSdk.NaverCloudPlatformClient("rdhfnllit2"));
         mapView.getMapAsync(this);
 
         mark1.setOnClickListener(new Button.OnClickListener() {
@@ -136,9 +168,18 @@ public class SubActivity extends AppCompatActivity implements OnMapReadyCallback
                                     TextView txtAddr = (TextView) view.findViewById(R.id.txtaddr);
                                     TextView txtTel = (TextView) view.findViewById(R.id.txttel);
 
+                                    test1 test1 = new test1();
+
                                     String a = "http://192.168.137.169:8000/index.html";
                                     txtTitle.setText("한국산업기술대학교");
-                                    txtAddr.setText("블랙아이스 위험 도로입니다.");
+                                    if(test1.getRoad().equals("blackice")){
+                                        txtAddr.setText("블랙아이스 위험 도로입니다");
+                                    }else if(test1.getRoad().equals("noblack")){
+                                        txtAddr.setText("블랙아이스 의심 도로입니다.");
+                                    }else{
+                                        txtAddr.setText("안전한 도로입니다.");
+                                    }
+                                    //txtAddr.setText(test1.getRoad());
                                     txtTel.setText("온도: " + test.getTemp1() + ",  습도: " + test.getHumi1() + "  날씨: " + test.getWeather());
 
 
@@ -194,11 +235,47 @@ public class SubActivity extends AppCompatActivity implements OnMapReadyCallback
             });*/
 
     }
+    public class NetworkTask extends AsyncTask<Void, Void, String> {
 
+        private String url;
+        private ContentValues values;
+
+        public NetworkTask(String url, ContentValues values) {
+
+            this.url = url;
+            this.values = values;
+        }
+
+        @Override
+        protected String doInBackground(Void... params) {
+
+            String result; // 요청 결과를 저장할 변수.
+            RequestHttpConnection requestHttpConnection = new RequestHttpConnection();
+            result = requestHttpConnection.request(url, values); // 해당 URL로 부터 결과물을 얻어온다.
+
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(final String s) {
+            super.onPostExecute(s);
+            test1 test1 = new test1();
+
+            String str[]=s.split(",");
+            test1.setRoad(str[0]);
+            test1.setName(str[1]);
+            //test1.setRoad(s);
+           // test1.setRoad(s);
+            //doInBackground()로 부터 리턴된 값이 onPostExecute()의 매개변수로 넘어오므로 s를 출력한다.
+            if(str[0].equals("blackice")) {
+                createNotification();
+
+            }
+        }
+    }
     private void createNotification() {
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "default");
-
         builder.setSmallIcon(R.mipmap.ic_launcher);
         builder.setContentTitle("경고");
         builder.setContentText("전방에 블랙아이스 도로입니다.");
@@ -214,6 +291,29 @@ public class SubActivity extends AppCompatActivity implements OnMapReadyCallback
         }
         notificationManager.notify(1, builder.build());
     }
+
+    private void createNotification1() {
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "default");
+
+        builder.setSmallIcon(R.mipmap.ic_launcher);
+        builder.setContentTitle("블랙아이스 도로 목록");
+               if(test1.getRoad().equals("blackice")&&test1.getName().equals("kpu")) {
+            builder.setContentText("한국산업기술대학교");
+        }
+
+        builder.setColor(Color.RED);
+        // 사용자가 탭을 클릭하면 자동 제거
+        builder.setAutoCancel(true);
+
+        // 알림 표시
+        NotificationManager notificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            notificationManager.createNotificationChannel(new NotificationChannel("default", "기본 채널", NotificationManager.IMPORTANCE_DEFAULT));
+        }
+        notificationManager.notify(1, builder.build());
+    }
+
 
     private void setMarker(Marker marker, double lat, double lng, int resourceID, int zIndex) {
         //원근감 표시
@@ -371,15 +471,14 @@ public class SubActivity extends AppCompatActivity implements OnMapReadyCallback
                 JSONObject jsonObject = new JSONObject(jsonString);
                 JSONArray jsonArray = jsonObject.getJSONArray("arduino");
 
+                test tmpTest = new test();
                 for (int i = 0; i < jsonArray.length(); i++) {
-                    test tmpTest = new test();
+
                     JSONObject item = jsonArray.getJSONObject(i);
 
-                    tmpTest.setTemp1(item.getString("tem"));
-                    tmpTest.setHumi1(item.getString("hum"));
+                    tmpTest.setTemp1(item.getString("temp1"));
+                    tmpTest.setHumi1(item.getString("humi1"));
                     tmpTest.setWeather(item.getString("weather"));
-
-
                     tmpMemberArray.add(tmpTest);
 
                 }

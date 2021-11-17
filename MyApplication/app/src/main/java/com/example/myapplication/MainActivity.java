@@ -15,6 +15,7 @@ public class MainActivity extends AppCompatActivity {
     private DrawerLayout drawerLayout;
     private View drawerView;
     private Button button1;
+    private Button button2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         button1 = (Button) findViewById(R.id.button1);
+        button2=(Button)findViewById(R.id.button2);
 
 
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -35,6 +37,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(getApplicationContext(), SubActivity.class);
+                startActivity(intent);
+
+            }
+        });
+        button2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getApplicationContext(), RoadActivity.class);
                 startActivity(intent);
 
             }

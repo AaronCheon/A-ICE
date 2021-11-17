@@ -4,7 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".LoginActivity">
+    tools:context=".LoginActivity"
+    android:background="@drawable/back"
+
+    >
     <EditText
         android:id="@+id/et_pass"
         android:layout_width="wrap_content"
@@ -41,13 +44,16 @@
         app:layout_constraintEnd_toEndOf="@+id/et_pass"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/et_pass"
-        app:layout_constraintTop_toBottomOf="@+id/et_pass" />
+        app:layout_constraintTop_toBottomOf="@+id/et_pass"
+        android:background="@drawable/round"
+        />
     <Button
         android:id="@+id/btn_register"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:text="회원가입"
+        android:background="@drawable/round"
         app:layout_constraintEnd_toEndOf="@+id/btn_login"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/btn_login"

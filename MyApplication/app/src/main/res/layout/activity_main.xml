@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
 
-    android:background="#5559b4"
+    android:background="@drawable/main"
     android:id="@+id/drawer_layout">
 
         <LinearLayout
@@ -17,44 +17,69 @@
                 android:layout_height="match_parent"
                 android:layout_weight="2"
 
-                ></LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="2"
                 >
-                <Button
+                <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    ></Button>
+                    android:src="@drawable/rogo1"
+                    android:layout_gravity="center"
+                    />
+
 
             </LinearLayout>
 
 
 
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="horizontal"
-            >
-            <Button
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:id="@+id/button1"
-                android:text="지도 보기"
-                ></Button>
+                android:layout_weight="2"
+                android:orientation="horizontal">
 
-            <Button
+
+                <ImageView
+                    android:layout_width="200dp"
+                    android:layout_height="200dp"
+                    android:src="@drawable/map"
+                    />
+                <ImageView
+                    android:layout_width="200dp"
+                    android:layout_height="200dp"
+                    android:src="@drawable/road"
+                    />
+
+
+
+
+
+            </LinearLayout>
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight="1"
-                ></Button>
+                android:layout_weight="2"
+                >
+                <Button
+                    android:id="@+id/button1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
 
-        </LinearLayout>
+                    android:layout_weight="1"
+                    android:background="@drawable/round"
+                    android:text="지도 보기"
+                    />
+                <Button
+                    android:id="@+id/button2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/round"
+                    android:text="도로 현황"
+                    android:layout_weight="1" />
+
+
+            </LinearLayout>
+
+
 
         </LinearLayout>
 

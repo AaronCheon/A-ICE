@@ -1,9 +1,15 @@
 package com.example.myapplication;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -25,137 +31,86 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 
+import android.content.ContentValues;
+import android.os.AsyncTask;
+
+import android.os.Bundle;
+import android.widget.TextView;
+
 public class Sebin extends AppCompatActivity {
-    //로그인 화면
-    private String jsonString;
-    private TextView text;
-    ArrayList<test> memberArrayList;  //회원정보를 저장할 ArrayList
+
+    private TextView tv_outPut;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sebin);
-        //setContentView(R.layout.map);
-        text=findViewById(R.id.text);
 
+        // 위젯에 대한 참조.
+        tv_outPut = (TextView) findViewById(R.id.tv_outPut);
 
+        // URL 설정.
+        String url = "http://hostsoo.dothome.co.kr/subin.php";
 
-        final JsonParse jsonParse = new JsonParse();    //AsyncTask 생성
-        jsonParse.execute("http://hostsoo.dothome.co.kr/sebin.php");   //AsycTask 실행
-
+        // AsyncTask를 통해 HttpURLConnection 수행.
+        NetworkTask networkTask = new NetworkTask(url, null);
+        networkTask.execute();
     }
 
-    public class JsonParse extends AsyncTask<String, Void, String>{
-        String TAG = "JsonParseTest";
+    private void createNotification() {
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "default");
+
+        builder.setSmallIcon(R.mipmap.ic_launcher);
+        builder.setContentTitle("경고");
+        builder.setContentText("전방에 블랙아이스 도로입니다.");
+
+        builder.setColor(Color.RED);
+        // 사용자가 탭을 클릭하면 자동 제거
+        builder.setAutoCancel(true);
+
+        // 알림 표시
+        NotificationManager notificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            notificationManager.createNotificationChannel(new NotificationChannel("default", "기본 채널", NotificationManager.IMPORTANCE_DEFAULT));
+        }
+        notificationManager.notify(1, builder.build());
+    }
+
+    public class NetworkTask extends AsyncTask<Void, Void, String> {
+
+        private String url;
+        private ContentValues values;
+
+        public NetworkTask(String url, ContentValues values) {
+
+            this.url = url;
+            this.values = values;
+        }
+
         @Override
-        protected String doInBackground(String... strings) {
-            String url = strings[0];    //excute의 매개변수를 받아와 사용
-            try{
-                String selectData = "tem=TEM";
+        protected String doInBackground(Void... params) {
 
-                URL serverURL = new URL(url);
-                HttpURLConnection httpURLConnection = (HttpURLConnection)serverURL.openConnection();
+            String result; // 요청 결과를 저장할 변수.
+            RequestHttpConnection requestHttpConnection = new RequestHttpConnection();
+            result = requestHttpConnection.request(url, values); // 해당 URL로 부터 결과물을 얻어온다.
 
-                httpURLConnection.setReadTimeout(5000);
-                httpURLConnection.setConnectTimeout(5000);
-                httpURLConnection.setRequestMethod("POST");
-                httpURLConnection.connect();
+            return result;
+        }
 
-                //어플에서 데이터 전송
-                OutputStream outputStream = httpURLConnection.getOutputStream();
-                outputStream.write(selectData.getBytes("UTF-8"));
-                //et_password.setText(selectData);
-                outputStream.flush();
-                outputStream.close();
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
 
-                int responseStatusCode = httpURLConnection.getResponseCode();
+            //doInBackground()로 부터 리턴된 값이 onPostExecute()의 매개변수로 넘어오므로 s를 출력한다.
+            if(s.equals("blackice")){
+                createNotification();
 
-                //연결 상태 확인
-                InputStream inputStream;
-                if(responseStatusCode == HttpURLConnection.HTTP_OK){
-                    inputStream = httpURLConnection.getInputStream();
-                }else{
-                    inputStream = httpURLConnection.getErrorStream();
-                }
-
-                InputStreamReader inputStreamReader = new InputStreamReader(inputStream, "UTF-8");
-                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-
-                StringBuilder sb = new StringBuilder();
-                String line;
-
-                while((line = bufferedReader.readLine()) != null){
-                    sb.append(line);
-                }
-
-                bufferedReader.close();
-                Log.d(TAG, sb.toString().trim());
-
-                return sb.toString().trim();    //받아온 JSON의 공백 제거
-            }catch (Exception e){
-                Log.d(TAG, "InsertData: Error",e);
-                return  null;
             }
-        }
-
-        //doInBackgroundString에서 return한 값을 받음
-        @Override
-        protected void onPostExecute(String fromdoInBackgroundString) {
-            super.onPostExecute(fromdoInBackgroundString);
-
-            if(fromdoInBackgroundString == null){text.setText("1");}
-            else{
-                jsonString = fromdoInBackgroundString;
-                memberArrayList = doParse();
-                if(memberArrayList.size() == 0) Toast.makeText(getApplicationContext(), "로그인 실패", Toast.LENGTH_LONG).show();
-                else {
-                    Toast.makeText(getApplicationContext(), "로그인 성공", Toast.LENGTH_LONG).show();
-                  text.setText("온도: "+test.getTemp1()+", 습도: "+test.getHumi1());
-            }
-            }
-        }
-
-
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
-
-        @Override
-        protected void onProgressUpdate(Void... values) {
-            super.onProgressUpdate(values);
-        }
-
-        @Override
-        protected void onCancelled(String s) {
-            super.onCancelled(s);
-        }
-
-        //JSON을 가공하여 ArrayList에 넣음
-        private ArrayList<test> doParse(){
-            ArrayList<test> tmpMemberArray = new ArrayList<test>();
-
-            try{
-                JSONObject jsonObject = new JSONObject(jsonString);
-                JSONArray jsonArray = jsonObject.getJSONArray("arduino");
-
-                for(int i=0; i<jsonArray.length(); i++){
-                    test tmpTest = new test();
-                    JSONObject item = jsonArray.getJSONObject(i);
-
-                    tmpTest.setTemp1(item.getString("tem"));
-                    tmpTest.setHumi1(item.getString("hum"));
-
-
-                    tmpMemberArray.add(tmpTest);
-
-                }
-
-
-            }catch (JSONException e){
-                e.printStackTrace();
-            }
-            return tmpMemberArray;
+            tv_outPut.setText(s);
         }
     }
 }
